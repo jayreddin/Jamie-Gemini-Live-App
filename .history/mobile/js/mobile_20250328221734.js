@@ -39,13 +39,10 @@ class MobileApp {
             // Handle iOS keyboard
             const controls = document.querySelector('.mobile-controls');
             window.visualViewport.addEventListener('resize', () => {
-                console.log(`[iOS Keyboard] Resize detected. Viewport Height: ${window.visualViewport.height}, Window Height: ${window.innerHeight}`);
                 if (window.visualViewport.height < window.innerHeight) {
                     controls.classList.add('keyboard-visible');
-                    console.log('[iOS Keyboard] Adding .keyboard-visible class');
                 } else {
                     controls.classList.remove('keyboard-visible');
-                    console.log('[iOS Keyboard] Removing .keyboard-visible class');
                 }
             });
         } else {
