@@ -52,9 +52,66 @@ geminiAgent.on('text', (text) => {
 
 // Handle camera preview events
 geminiAgent.on('camera_preview_ready', (previewContainer) => {
-    // Add a new message with the camera preview
     chatManager.addUserMessage('', previewContainer);
 });
+
+// Initialize audio visualization
+const visualizerContainer = document.getElementById('visualizerContainer');
+const visualizerCanvas = document.getElementById('visualizer');
+
+// Store visualization style preference
+let currentVisualizationStyle = localStorage.getItem('visualizationStyle') || 'waveform';
+visualizerContainer.dataset.style = currentVisualizationStyle;
+
+// Handle microphone button
+const micBtn = document.querySelector('.mic-btn');
+if (micBtn) {
+    let isFirstActivation = true;
+
+    micBtn.addEventListener('click', async () => {
+        if (!micBtn.classList.contains('active')) {
+            try {
+                await geminiAgent.startRecording();
+                micBtn.classList.add('active');
+                
+                // Initialize visualizer on first activation
+                if (isFirstActivation) {
+                    geminiAgent.recorder.initVisualizer(visualizerCanvas, {
+                        style: currentVisualizationStyle,
+                        foregroundColor: getComputedStyle(document.documentElement)
+                            .getPropertyValue('--accent-color').trim()
+                    });
+                    isFirstActivation = false;
+                }
+                
+                visualizerContainer.classList.add('active');
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+            }
+        } else {
+            await geminiAgent.stopRecording();
+            micBtn.classList.remove('active');
+            visualizerContainer.classList.remove('active');
+        }
+    });
+
+    // Double click to cycle visualization styles
+    micBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        
+        const styles = ['waveform', 'bars', 'circle'];
+        const currentIndex = styles.indexOf(currentVisualizationStyle);
+        const nextStyle = styles[(currentIndex + 1) % styles.length];
+        
+        currentVisualizationStyle = nextStyle;
+        localStorage.setItem('visualizationStyle', nextStyle);
+        visualizerContainer.dataset.style = nextStyle;
+        
+        if (geminiAgent.recorder?.visualizer) {
+            geminiAgent.recorder.visualizer.setStyle(nextStyle);
+        }
+    });
+}
 
 // Handle camera toggle
 const cameraBtn = document.querySelector('.camera-btn');

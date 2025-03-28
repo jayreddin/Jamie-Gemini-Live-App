@@ -1,0 +1,60 @@
+.visualizer-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100px;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.visualizer-container.active {
+    opacity: 1;
+}
+
+.visualizer-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Visualization styles for different modes */
+.visualizer-container[data-style="waveform"] canvas {
+    filter: blur(1px); /* Soft blur for smoother waveform */
+}
+
+.visualizer-container[data-style="bars"] canvas {
+    filter: none; /* Sharp edges for bars */
+}
+
+.visualizer-container[data-style="circle"] {
+    height: 200px;
+    bottom: 100px;
+}
+
+/* Mobile optimizations */
+@media screen and (max-width: 768px) {
+    .visualizer-container {
+        height: 80px;
+    }
+
+    .visualizer-container[data-style="circle"] {
+        height: 160px;
+        bottom: 80px;
+    }
+}
+
+/* High-contrast theme support */
+@media (prefers-contrast: more) {
+    .visualizer-container canvas {
+        filter: none !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .visualizer-container {
+        transition: none;
+    }
+}

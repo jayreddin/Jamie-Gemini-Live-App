@@ -1,4 +1,5 @@
 import { arrayBufferToBase64 } from '../utils/utils.js';
+import { Waveform } from './visualizer/waveform.js';
 
 /**
  * AudioRecorder manages the capture and processing of audio input from the user's microphone.
@@ -17,9 +18,38 @@ export class AudioRecorder extends EventTarget {
         this.audioContext = null;        // AudioContext for Web Audio API
         this.source = null;              // MediaStreamAudioSourceNode
         this.processor = null;           // AudioWorkletNode for processing
+        this.visualizer = null;          // Audio visualization
         this.onAudioData = null;         // Callback for processed audio chunks
         this.isRecording = false;        // Recording state flag
         this.isSuspended = false;        // Mic suspension state
+    }
+
+    /**
+     * Initializes the audio visualizer
+     * @param {HTMLCanvasElement} canvas - Canvas element for visualization
+     * @param {Object} options - Visualization options
+     */
+    initVisualizer(canvas, options = {}) {
+        if (!this.audioContext || !this.source) {
+            throw new Error('Audio context not initialized. Call start() first.');
+        }
+
+        // Create and configure visualizer
+        this.visualizer = new Waveform(this.audioContext, canvas, {
+            backgroundColor: 'transparent',
+            foregroundColor: '#4CAF50',
+            style: options.style || 'waveform',
+            ...options
+        });
+
+        // Connect audio source to visualizer
+        this.visualizer.connectSource(this.source);
+        this.visualizer.start();
+
+        // Emit visualization ready event
+        this.dispatchEvent(new CustomEvent('visualizer_ready', {
+            detail: { visualizer: this.visualizer }
+        }));
     }
 
     /**
@@ -78,6 +108,12 @@ export class AudioRecorder extends EventTarget {
                 return;
             }
 
+            // Stop visualization if active
+            if (this.visualizer) {
+                this.visualizer.dispose();
+                this.visualizer = null;
+            }
+
             // Stop all active media tracks
             if (this.stream) {
                 this.stream.getTracks().forEach(track => track.stop());
@@ -104,6 +140,9 @@ export class AudioRecorder extends EventTarget {
         try {
             await this.audioContext.suspend();
             this.stream.getTracks().forEach(track => track.enabled = false);
+            if (this.visualizer) {
+                this.visualizer.stop();
+            }
             this.isSuspended = true;
             console.info('Microphone suspended');
         } catch (error) {
@@ -120,6 +159,9 @@ export class AudioRecorder extends EventTarget {
         try {
             await this.audioContext.resume();
             this.stream.getTracks().forEach(track => track.enabled = true);
+            if (this.visualizer) {
+                this.visualizer.start();
+            }
             this.isSuspended = false;
             console.info('Microphone resumed');
         } catch (error) {

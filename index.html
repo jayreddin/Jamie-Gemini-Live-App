@@ -5,22 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jamie - Gemini Live App</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .icon-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-        .app-header {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.5em;
-            color: var(--text-color);
-            z-index: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="css/components/visualizer.css">
 </head>
 <body>
     <div class="app-container">
@@ -46,7 +31,9 @@
             </svg>
         </button>
         <div id="chatHistory" class="chat-history"></div>
-        <canvas id="visualizer" class="visualizer"></canvas>
+        <div id="visualizerContainer" class="visualizer-container" data-style="waveform">
+            <canvas id="visualizer"></canvas>
+        </div>
         <div id="cameraPreview" class="camera-preview"></div>
         <div id="screenPreview" class="screen-preview"></div>
         <div class="text-input-container">
