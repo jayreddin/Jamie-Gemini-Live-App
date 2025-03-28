@@ -496,66 +496,165 @@ body {
 @media screen and (max-width: 768px) {
     .app-header {
         font-size: 1.2em;
-        top: 25px;
+        top: 15px;
     }
 
     .chat-history {
-        top: 80px;
+        top: 70px;
+        bottom: 180px; /* Make room for controls */
         padding: 10px;
+        margin-bottom: 10px;
     }
 
     .text-input-container {
-        left: 10px;
-        right: 65px;
-        bottom: 15px;
+        left: 15px;
+        right: 70px;
+        bottom: 20px;
+        height: 45px;
+    }
+
+    .text-input {
+        height: 100%;
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 10px 15px;
     }
 
     .chat-message {
-        max-width: 90%;
+        max-width: 85%;
+        padding: 12px 15px;
     }
 
-    .mic-btn {
-        right: 10px;
-        bottom: 15px;
+    /* Control buttons positioning */
+    .control-buttons {
+        position: fixed;
+        bottom: 80px;
+        right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 100;
     }
 
-    .camera-btn {
-        right: 10px;
-        bottom: 125px;
+    .mic-btn, .camera-btn, .screen-btn {
+        position: static; /* Remove absolute positioning */
+        width: 50px;
+        height: 50px;
+        margin: 0;
+        padding: 12px;
     }
 
-    .screen-btn {
-        right: 10px;
-        bottom: 70px;
+    .mic-btn svg, .camera-btn svg, .screen-btn svg {
+        width: 24px;
+        height: 24px;
     }
 
+    /* Header controls */
     .settings-btn {
-        padding: 8px;
-        top: 15px;
-        right: 10px;
+        padding: 8px 12px;
+        top: 10px;
+        right: 15px;
+        z-index: 101;
     }
 
     .disconnect-btn, .connect-btn {
         padding: 8px 15px;
-        top: 15px;
-        left: 10px;
+        top: 10px;
+        left: 15px;
         font-size: 14px;
+        z-index: 101;
+    }
+
+    /* Preview containers */
+    .camera-preview, .screen-preview {
+        position: static;
+        width: calc(100% - 30px);
+        max-width: 300px;
+        margin: 10px auto;
+        border-radius: 12px;
+    }
+
+    /* Ensure buttons are clickable */
+    .icon-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improve touch targets */
+    .icon-btn:before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        bottom: -10px;
+        left: -10px;
     }
 }
 
 /* Small screen adjustments */
 @media screen and (max-width: 350px) {
+    .chat-history {
+        bottom: 160px;
+        padding: 8px;
+    }
+
     .chat-message {
         max-width: 95%;
+        font-size: 14px;
+        padding: 10px 12px;
     }
 
     .text-input-container {
-        right: 55px;
+        right: 60px;
+        bottom: 15px;
+        height: 40px;
     }
 
     .send-btn {
         width: 35px;
         height: 35px;
+    }
+
+    .control-buttons {
+        bottom: 70px;
+        right: 10px;
+        gap: 8px;
+    }
+
+    .mic-btn, .camera-btn, .screen-btn {
+        width: 45px;
+        height: 45px;
+        padding: 10px;
+    }
+
+    .mic-btn svg, .camera-btn svg, .screen-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .camera-preview, .screen-preview {
+        width: calc(100% - 20px);
+        margin: 8px auto;
+    }
+
+    /* Adjust header elements */
+    .settings-btn, .disconnect-btn, .connect-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    /* Improve touch targets */
+    .icon-btn:before {
+        top: -8px;
+        right: -8px;
+        bottom: -8px;
+        left: -8px;
+    }
+}
+
+/* Ensure proper scroll behavior on iOS */
+@supports (-webkit-touch-callout: none) {
+    .chat-history {
+        padding-bottom: 30px; /* Extra padding for iOS bounce scroll */
     }
 }
 
