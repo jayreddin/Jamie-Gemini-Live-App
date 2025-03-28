@@ -10,6 +10,16 @@ export const getDeepgramApiKey = () => {
 // Audio Configurations
 export const MODEL_SAMPLE_RATE = parseInt(localStorage.getItem('sampleRate')) || 27000;
 
+// Camera/Screen Configurations
+export const CAPTURE_FPS = parseInt(localStorage.getItem('fps')) || 5;
+export const CAPTURE_RESIZE_WIDTH = parseInt(localStorage.getItem('resizeWidth')) || 640;
+export const CAPTURE_QUALITY = parseFloat(localStorage.getItem('quality')) || 0.4;
+export const CAMERA_FACING_MODE = localStorage.getItem('facingMode') || 'environment';
+
+// Deepgram Configuration
+export const DEEPGRAM_KEEP_ALIVE_INTERVAL = 10000; // ms
+export const DEEPGRAM_KEEPALIVE_MESSAGE = JSON.stringify({ type: 'KeepAlive' });
+
 const thresholds = {
     0: "BLOCK_NONE",
     1: "BLOCK_ONLY_HIGH",

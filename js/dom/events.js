@@ -72,9 +72,6 @@ export function setupEventListeners(agent) {
         }
     });
 
-    // Get stored visualization style preference
-    let currentVisualizationStyle = localStorage.getItem('visualizationStyle') || 'waveform';
-
     // Camera toggle handler with preview mode support
     let isCameraInChat = true;
     elements.cameraBtn.addEventListener('click', async () => {
@@ -139,6 +136,7 @@ export function setupEventListeners(agent) {
     });
 
     // Visualization style cycling
+    let currentVisualizationStyle = localStorage.getItem('visualizationStyle') || 'waveform'; // Keep track of the style
     elements.micBtn.addEventListener('dblclick', (e) => {
         e.preventDefault();
         
@@ -146,10 +144,16 @@ export function setupEventListeners(agent) {
         const currentIndex = styles.indexOf(currentVisualizationStyle);
         const nextStyle = styles[(currentIndex + 1) % styles.length];
         
-        currentVisualizationStyle = nextStyle;
-        localStorage.setItem('visualizationStyle', nextStyle);
-        elements.visualizerContainer.dataset.style = nextStyle;
+        // Update the style
+        currentVisualizationStyle = nextStyle; 
+        localStorage.setItem('visualizationStyle', nextStyle); // Save preference
         
+        // Update UI immediately
+        if (elements.visualizerContainer) {
+            elements.visualizerContainer.dataset.style = nextStyle;
+        }
+        
+        // Update active visualizer if it exists
         if (agent.recorder?.visualizer) {
             agent.recorder.visualizer.setStyle(nextStyle);
         }

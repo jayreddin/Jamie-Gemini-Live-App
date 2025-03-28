@@ -4,6 +4,14 @@
  * and coordinates the overall application functionality.
  */
 import { GeminiWebsocketClient } from '../ws/client.js';
+import {
+    CAPTURE_FPS,
+    CAPTURE_RESIZE_WIDTH,
+    CAPTURE_QUALITY,
+    CAMERA_FACING_MODE,
+    DEEPGRAM_KEEP_ALIVE_INTERVAL,
+    DEEPGRAM_KEEPALIVE_MESSAGE
+} from '../config/config.js';
 
 import { AudioRecorder } from '../audio/recorder.js';
 import { AudioStreamer } from '../audio/streamer.js';
@@ -42,24 +50,21 @@ export class GeminiAgent{
         this.deepgramApiKey = deepgramApiKey;
         this.modelSampleRate = modelSampleRate;
 
-        // Initialize screen & camera settings
-        this.fps = localStorage.getItem('fps') || '5';
-        this.captureInterval = 1000 / this.fps;
-        this.resizeWidth = localStorage.getItem('resizeWidth') || '640';
-        this.quality = localStorage.getItem('quality') || '0.4';
-        
+        // Initialize screen & camera settings using imported constants
+        this.captureInterval = 1000 / CAPTURE_FPS;
+
         // Initialize camera
         this.cameraManager = new CameraManager({
-            width: this.resizeWidth,
-            quality: this.quality,
-            facingMode: localStorage.getItem('facingMode') || 'environment'
+            width: CAPTURE_RESIZE_WIDTH,
+            quality: CAPTURE_QUALITY,
+            facingMode: CAMERA_FACING_MODE
         });
         this.cameraInterval = null;
 
         // Initialize screen sharing
         this.screenManager = new ScreenManager({
-            width: this.resizeWidth,
-            quality: this.quality,
+            width: CAPTURE_RESIZE_WIDTH,
+            quality: CAPTURE_QUALITY,
             onStop: () => {
                 // Clean up interval and emit event when screen sharing stops
                 if (this.screenInterval) {
@@ -122,12 +127,34 @@ export class GeminiAgent{
             await this.handleToolCall(toolCall);
         });
     }
-        
-    // TODO: Handle multiple function calls
+    /**
+     * Handles incoming tool calls from the model.
+     * Iterates through each function call, executes it via the ToolManager,
+     * and sends the response back to the model.
+     * @param {object} toolCall - The tool call object received from the WebSocket.
+     */
     async handleToolCall(toolCall) {
-        const functionCall = toolCall.functionCalls[0];
-        const response = await this.toolManager.handleToolCall(functionCall);
-        await this.client.sendToolResponse(response);
+        if (!toolCall || !Array.isArray(toolCall.functionCalls) || toolCall.functionCalls.length === 0) {
+            console.warn('Received tool_call event with no function calls:', toolCall);
+            return;
+        }
+
+        console.info(`Handling ${toolCall.functionCalls.length} function call(s)...`);
+        
+        // Process each function call sequentially
+        for (const functionCall of toolCall.functionCalls) {
+            try {
+                console.debug('Executing function call:', functionCall);
+                const response = await this.toolManager.handleToolCall(functionCall);
+                console.debug('Sending tool response:', response);
+                await this.client.sendToolResponse(response);
+            } catch (error) {
+                console.error(`Error handling function call ${functionCall?.name}:`, error);
+                // Optionally send an error response back to the model
+                // await this.client.sendToolResponse({ toolUseId: functionCall.toolUseId, error: error.message });
+            }
+        }
+        console.info('Finished handling function call(s).');
     }
 
     /**
@@ -243,66 +270,78 @@ export class GeminiAgent{
      * Ensures proper cleanup of audio, screen sharing, and WebSocket resources.
      */
     async disconnect() {
+        console.info('Disconnecting and cleaning up resources...');
         try {
             // Stop camera capture first
-            await this.stopCameraCapture();
+            await this.stopCameraCapture(); // stopCameraCapture already handles checks
 
             // Stop screen sharing
-            await this.stopScreenShare();
+            await this.stopScreenShare(); // stopScreenShare already handles checks
 
-            // Cleanup audio resources in correct order
+            // Cleanup audio resources in correct order, checking for existence
             if (this.audioRecorder) {
                 this.audioRecorder.stop();
                 this.audioRecorder = null;
+                console.info('Audio recorder stopped.');
             }
 
-            // Cleanup audio visualizer before audio context
             if (this.visualizer) {
                 this.visualizer.cleanup();
                 this.visualizer = null;
+                console.info('Visualizer cleaned up.');
             }
 
-            // Clean up audio streamer before closing context
             if (this.audioStreamer) {
                 this.audioStreamer.stop();
                 this.audioStreamer = null;
+                console.info('Audio streamer stopped.');
             }
 
             // Cleanup model's speech transcriber
+            if (this.modelsKeepAliveInterval) {
+                clearInterval(this.modelsKeepAliveInterval);
+                this.modelsKeepAliveInterval = null;
+                console.info('Model transcriber keep-alive interval cleared.');
+            }
             if (this.modelTranscriber) {
                 this.modelTranscriber.disconnect();
                 this.modelTranscriber = null;
-                if (this.modelsKeepAliveInterval) {
-                    clearInterval(this.modelsKeepAliveInterval);
-                    this.modelsKeepAliveInterval = null;
-                }
+                console.info('Model transcriber disconnected.');
             }
 
             // Cleanup user's speech transcriber
+            if (this.userKeepAliveInterval) {
+                clearInterval(this.userKeepAliveInterval);
+                this.userKeepAliveInterval = null;
+                console.info('User transcriber keep-alive interval cleared.');
+            }
             if (this.userTranscriber) {
                 this.userTranscriber.disconnect();
                 this.userTranscriber = null;
-                if (this.userKeepAliveInterval) {
-                    clearInterval(this.userKeepAliveInterval);
-                    this.userKeepAliveInterval = null;
-                }
+                console.info('User transcriber disconnected.');
             }
 
             // Finally close audio context
-            if (this.audioContext) {
+            if (this.audioContext && this.audioContext.state !== 'closed') {
                 await this.audioContext.close();
                 this.audioContext = null;
+                console.info('Audio context closed.');
             }
 
             // Cleanup WebSocket
-            this.client.disconnect();
-            this.client = null;
+            if (this.client) {
+                this.client.disconnect();
+                this.client = null;
+                console.info('WebSocket client disconnected.');
+            }
+            
             this.initialized = false;
             this.connected = false;
             
-            console.info('Disconnected and cleaned up all resources');
+            console.info('Finished disconnecting and cleaning up all resources.');
         } catch (error) {
-            throw new Error('Disconnect error:' + error);
+            console.error('Disconnect error:', error);
+            // Don't re-throw, just log the error during cleanup
         }
     }
 
@@ -322,11 +361,11 @@ export class GeminiAgent{
             this.modelTranscriber.on('connected', () => {
                 console.info('Model speech transcriber connection established, setting up keep-alive...');
                 this.modelsKeepAliveInterval = setInterval(() => {
-                    if (this.modelTranscriber.isConnected) {
-                        this.modelTranscriber.ws.send(JSON.stringify({ type: 'KeepAlive' }));
-                        console.info('Sent keep-alive message to model speech transcriber');
+                    if (this.modelTranscriber && this.modelTranscriber.isConnected) {
+                        this.modelTranscriber.ws.send(DEEPGRAM_KEEPALIVE_MESSAGE);
+                        // console.info('Sent keep-alive message to model speech transcriber'); // Reduce log noise
                     }
-                }, 10000);
+                }, DEEPGRAM_KEEP_ALIVE_INTERVAL);
                 resolve();
             });
         });
@@ -358,11 +397,11 @@ export class GeminiAgent{
             this.userTranscriber.on('connected', () => {
                 console.info('User speech transcriber connection established, setting up keep-alive...');
                 this.userKeepAliveInterval = setInterval(() => {
-                    if (this.userTranscriber.isConnected) {
-                        this.userTranscriber.ws.send(JSON.stringify({ type: 'KeepAlive' }));
-                        console.info('Sent keep-alive message to user transcriber');
+                    if (this.userTranscriber && this.userTranscriber.isConnected) {
+                        this.userTranscriber.ws.send(DEEPGRAM_KEEPALIVE_MESSAGE);
+                        // console.info('Sent keep-alive message to user transcriber'); // Reduce log noise
                     }
-                }, 10000);
+                }, DEEPGRAM_KEEP_ALIVE_INTERVAL);
                 resolve();
             });
         });
@@ -411,8 +450,11 @@ export class GeminiAgent{
             console.info(`${this.client.name} initialized successfully`);
             this.client.sendText('.');  // Trigger the model to start speaking first
         } catch (error) {
-            console.error('Initialization error:', error);
-            throw new Error('Error during the initialization of the client: ' + error.message);
+            console.error('Initialization failed:', error); // Log the original error
+            // Optionally re-throw the original error if initialization failure should halt execution
+            // throw error; 
+            // Or throw a more specific error wrapping the original if needed
+            throw new Error(`Initialization failed: ${error.message}`); 
         }
     }
 

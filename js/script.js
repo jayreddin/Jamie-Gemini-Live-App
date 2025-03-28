@@ -78,8 +78,28 @@ geminiAgent.on('recording_stopped', () => {
     elements.visualizerContainer?.classList.remove('active');
 });
 
-// Setup all event listeners
-setupEventListeners(geminiAgent);
+async function initializeApp() {
+    try {
+        // Setup all event listeners
+        setupEventListeners(geminiAgent);
 
-// Initialize connection
-geminiAgent.connect();
+        // Initialize connection
+        await geminiAgent.connect();
+        console.log('Gemini Agent connected successfully.');
+
+        // Optionally, trigger initial interaction or UI update here
+        // geminiAgent.initialize(); // Assuming initialize handles the first interaction
+
+    } catch (error) {
+        console.error('Failed to initialize the application:', error);
+        // Display an error message to the user in the UI
+        chatManager.addErrorMessage('Failed to connect. Please check your API key and network connection, then refresh the page.');
+        // Optionally disable UI elements
+        elements.connectBtn.style.display = 'block';
+        elements.disconnectBtn.style.display = 'none';
+        // Disable control buttons etc.
+    }
+}
+
+// Start the application
+initializeApp();

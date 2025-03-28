@@ -16,8 +16,11 @@ export class GeminiWebsocketClient extends EventEmitter {
      */
     constructor(name, url, config) {
         super();
+        if (!url) throw new Error('WebSocket URL is required for GeminiWebsocketClient');
+        if (!config) throw new Error('Config is required for GeminiWebsocketClient');
+
         this.name = name || 'WebSocketClient';
-        this.url = url || `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${apiKey}`;
+        this.url = url; // URL is required, remove fallback
         this.ws = null;
         this.config = config;
         this.isConnecting = false;
@@ -164,9 +167,13 @@ export class GeminiWebsocketClient extends EventEmitter {
      * @param {string} base64audio - The base64 encoded audio string.
      */
     async sendAudio(base64audio) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn(`${this.name}: WebSocket not open. Cannot send audio.`);
+            return;
+        }
         const data = { realtimeInput: { mediaChunks: [{ mimeType: 'audio/pcm', data: base64audio }] } };
         await this.sendJSON(data);
-        console.debug(`Sending audio chunk to ${this.name}.`);
+        // console.debug(`Sending audio chunk to ${this.name}.`); // Reduce log noise
     }
 
     /**
@@ -175,9 +182,13 @@ export class GeminiWebsocketClient extends EventEmitter {
      * @param {string} base64image - The base64 encoded image string.
      */
     async sendImage(base64image) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn(`${this.name}: WebSocket not open. Cannot send image.`);
+            return;
+        }
         const data = { realtimeInput: { mediaChunks: [{ mimeType: 'image/jpeg', data: base64image }] } };
         await this.sendJSON(data);
-        console.debug(`Image with a size of ${Math.round(base64image.length/1024)} KB was sent to the ${this.name}.`);
+        // console.debug(`Image with a size of ${Math.round(base64image.length/1024)} KB was sent to the ${this.name}.`); // Reduce log noise
     }
 
     /**
@@ -187,17 +198,21 @@ export class GeminiWebsocketClient extends EventEmitter {
      * @param {boolean} endOfTurn - If false model will wait for more input without sending a response.
      */
     async sendText(text, endOfTurn = true) {
-        const formattedText = { 
-            clientContent: { 
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn(`${this.name}: WebSocket not open. Cannot send text.`);
+            return;
+        }
+        const formattedText = {
+            clientContent: {
                 turns: [{
-                    role: 'user', 
-                    parts: { text: text } // TODO: Should it be in the list or not?
-                }], 
-                turnComplete: endOfTurn 
-            } 
+                    role: 'user',
+                    parts: [{ text: text }] // Ensure parts is always an array
+                }],
+                turnComplete: endOfTurn
+            }
         };
         await this.sendJSON(formattedText);
-        console.debug(`Text sent to ${this.name}:`, text);
+        // console.debug(`Text sent to ${this.name}:`, text); // Reduce log noise
     }
     /**
      * Sends the result of the tool call to Gemini.
@@ -207,7 +222,12 @@ export class GeminiWebsocketClient extends EventEmitter {
      * @param {string} toolResponse.error - Send the output as null and the error message if the tool call failed (optional)
      */
     async sendToolResponse(toolResponse) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn(`${this.name}: WebSocket not open. Cannot send tool response.`);
+            return;
+        }
         if (!toolResponse || !toolResponse.id) {
+            console.error('Tool response must include an id', toolResponse);
             throw new Error('Tool response must include an id');
         }
 
@@ -237,13 +257,20 @@ export class GeminiWebsocketClient extends EventEmitter {
      * 
      * @param {Object} json - The JSON object to send.
      */
-
-    async sendJSON(json) {        
+    async sendJSON(json) {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn(`${this.name}: WebSocket not open. Cannot send JSON.`);
+            // Optionally throw an error or return false
+            return; 
+        }
         try {
             this.ws.send(JSON.stringify(json));
-            // console.debug(`JSON Object was sent to ${this.name}:`, json);
+            // console.debug(`JSON Object was sent to ${this.name}:`, json); // Reduce log noise
         } catch (error) {
-            throw new Error(`Failed to send ${json} to ${this.name}:` + error);
+            console.error(`Failed to send JSON to ${this.name}:`, error, json);
+            // Optionally emit an error event
+            // this.emit('error', new Error(`Failed to send JSON: ${error.message}`));
+            throw new Error(`Failed to send JSON to ${this.name}: ${error.message}`);
         }
     }
 }
