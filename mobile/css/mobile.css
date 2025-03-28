@@ -1,0 +1,172 @@
+/* Base Mobile Styles */
+:root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --control-height: 60px;
+    --button-size: 50px;
+    --header-height: 60px;
+}
+
+.mobile-container {
+    padding-top: calc(var(--header-height) + var(--safe-area-inset-top));
+    padding-bottom: calc(var(--control-height) + var(--safe-area-inset-bottom));
+}
+
+/* Status Bar */
+.mobile-status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: var(--bg-color);
+    z-index: 1000;
+}
+
+/* Chat Area */
+.chat-history {
+    position: fixed;
+    top: calc(var(--header-height) + var(--safe-area-inset-top));
+    bottom: calc(var(--control-height) + var(--button-size) + 20px + var(--safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    padding: 15px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Preview Area */
+.mobile-preview-area {
+    position: fixed;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.mobile-preview-area.active {
+    pointer-events: auto;
+}
+
+.camera-preview,
+.screen-preview {
+    position: relative;
+    width: calc(100% - 30px);
+    max-width: 300px;
+    margin: 10px auto;
+    aspect-ratio: 16/9;
+    background-color: var(--button-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.camera-preview.active,
+.screen-preview.active {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* Controls Area */
+.mobile-controls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 15px calc(10px + var(--safe-area-inset-bottom));
+    background-color: var(--bg-color);
+    z-index: 1000;
+}
+
+.control-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    padding: 5px 0;
+}
+
+.icon-btn {
+    position: relative;
+    width: var(--button-size);
+    height: var(--button-size);
+    margin: 0;
+    padding: 12px;
+    border-radius: 50%;
+    background-color: var(--button-bg);
+    border: 2px solid var(--accent-color);
+    transition: transform 0.2s ease;
+}
+
+.icon-btn:active {
+    transform: scale(0.95);
+}
+
+.icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Text Input Area */
+.text-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.text-input {
+    flex: 1;
+    height: var(--control-height);
+    padding: 12px 15px;
+    border-radius: 25px;
+    font-size: 16px;
+    background-color: var(--button-bg);
+    border: 1px solid var(--accent-color);
+}
+
+.send-btn {
+    width: var(--control-height);
+    height: var(--control-height);
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+/* Touch Targets */
+.icon-btn::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    bottom: -10px;
+    left: -10px;
+    z-index: -1;
+}
+
+/* Visualizer */
+.visualizer-container {
+    position: fixed;
+    bottom: calc(var(--control-height) + var(--safe-area-inset-bottom));
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.visualizer-container.active {
+    opacity: 1;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
