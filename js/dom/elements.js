@@ -1,11 +1,14 @@
 // DOM elements object
 const elements = {
+    // Control buttons container
+    controlButtons: document.getElementById('controlButtons'),
+
     // Button elements
     disconnectBtn: document.getElementById('disconnectBtn'),
     connectBtn: document.getElementById('connectBtn'),
-    micBtn: document.getElementById('micBtn'),
-    cameraBtn: document.getElementById('cameraBtn'),
-    screenBtn: document.getElementById('screenBtn'),
+    micBtn: document.getElementById('micBtnControl'),
+    cameraBtn: document.getElementById('cameraBtnControl'),
+    screenBtn: document.getElementById('screenBtnControl'),
     settingsBtn: document.getElementById('settingsBtn'),
 
     // Preview elements
@@ -16,7 +19,8 @@ const elements = {
     messageInput: document.getElementById('messageInput'),
     sendBtn: document.getElementById('sendBtn'),
 
-    // Visualizer canvas
+    // Visualizer elements
+    visualizerContainer: document.getElementById('visualizerContainer'),
     visualizerCanvas: document.getElementById('visualizer')
 };
 

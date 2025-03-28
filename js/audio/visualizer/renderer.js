@@ -1,4 +1,4 @@
-r/**
+/**
  * Handles rendering audio visualizations using Canvas API
  */
 export class VisualizationRenderer {

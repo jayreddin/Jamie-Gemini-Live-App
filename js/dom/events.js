@@ -72,13 +72,17 @@ export function setupEventListeners(agent) {
         }
     });
 
-    // Camera toggle handler
+    // Get stored visualization style preference
+    let currentVisualizationStyle = localStorage.getItem('visualizationStyle') || 'waveform';
+
+    // Camera toggle handler with preview mode support
+    let isCameraInChat = true;
     elements.cameraBtn.addEventListener('click', async () => {
         try {
             await ensureAgentReady(agent);
             
             if (!isCameraActive) {
-                await agent.startCameraCapture();
+                await agent.startCameraCapture(isCameraInChat);
                 elements.cameraBtn.classList.add('active');
             } else {
                 await agent.stopCameraCapture();
@@ -92,10 +96,23 @@ export function setupEventListeners(agent) {
         }
     });
 
-    // Screen sharing handler
+    // Double click to toggle camera preview mode
+    elements.cameraBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        isCameraInChat = !isCameraInChat;
+        
+        if (isCameraActive) {
+            agent.stopCameraCapture();
+            agent.startCameraCapture(isCameraInChat);
+        }
+        
+        elements.cameraBtn.setAttribute('title', isCameraInChat ? 'Camera (Inline Mode)' : 'Camera (Float Mode)');
+        elements.cameraBtn.style.opacity = isCameraInChat ? '1' : '0.7';
+    });
+
+    // Screen sharing handler with mobile support
     let isScreenShareActive = false;
     
-    // Listen for screen share stopped events (from native browser controls)
     agent.on('screenshare_stopped', () => {
         elements.screenBtn.classList.remove('active');
         isScreenShareActive = false;
@@ -118,6 +135,23 @@ export function setupEventListeners(agent) {
             console.error('Error toggling screen share:', error);
             elements.screenBtn.classList.remove('active');
             isScreenShareActive = false;
+        }
+    });
+
+    // Visualization style cycling
+    elements.micBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        
+        const styles = ['waveform', 'bars', 'circle'];
+        const currentIndex = styles.indexOf(currentVisualizationStyle);
+        const nextStyle = styles[(currentIndex + 1) % styles.length];
+        
+        currentVisualizationStyle = nextStyle;
+        localStorage.setItem('visualizationStyle', nextStyle);
+        elements.visualizerContainer.dataset.style = nextStyle;
+        
+        if (agent.recorder?.visualizer) {
+            agent.recorder.visualizer.setStyle(nextStyle);
         }
     });
 
