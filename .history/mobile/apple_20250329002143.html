@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a1a">
-    <title>Jamie - Android</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Jamie - iOS</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body class="mobile-container">
     <div class="app-container">
         <h1 class="app-header">Jamie</h1>
-        <span class="device-tag">Android</span>
+        <span class="device-tag">iPhone</span>
         <button id="disconnectBtn" class="disconnect-btn">Disconnect</button>
         <button id="connectBtn" class="connect-btn" style="display: none;">Connect</button>
         <button id="settingsBtn" class="settings-btn">⚙️</button>
@@ -60,55 +60,24 @@
         // Device-specific detection
         const userAgent = navigator.userAgent;
         const deviceTag = document.querySelector('.device-tag');
-        if (/tablet|pad|nexus 7|xoom/i.test(userAgent)) {
-            deviceTag.textContent = 'Android Tablet';
+        if (/iPad/i.test(userAgent)) {
+            deviceTag.textContent = 'iPad';
+        } else if (/iPhone/i.test(userAgent)) {
+            deviceTag.textContent = 'iPhone';
         }
 
-        // Handle Android-specific features
-        if ('wakeLock' in navigator) {
-            // Keep screen on when using camera/mic
-            let wakeLock = null;
-            const requestWakeLock = async () => {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                } catch (err) {
-                    console.log(`Wake Lock error: ${err.name}, ${err.message}`);
-                }
-            };
-            // Request wake lock when camera/mic is active
-            ['cameraBtnControl', 'micBtnControl'].forEach(id => {
-                document.getElementById(id).addEventListener('click', () => {
-                    if (document.getElementById(id).classList.contains('active')) {
-                        requestWakeLock();
-                    } else if (wakeLock) {
-                        wakeLock.release();
-                        wakeLock = null;
-                    }
-                });
-            });
+        // Handle PWA status bar on iOS
+        if (window.navigator.standalone) {
+            document.body.classList.add('ios-pwa');
         }
 
-        // Handle back button
-        window.addEventListener('popstate', function(e) {
-            // Check if settings or preview is open
-            const settings = document.querySelector('.mobile-settings-dialog');
-            if (settings && settings.style.display === 'block') {
-                settings.style.display = 'none';
+        // Prevent bounce scrolling on iOS
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.mobile-chat-history, .mobile-settings-dialog') === null) {
                 e.preventDefault();
-                return;
             }
-            
-            const previews = document.querySelectorAll('.mobile-camera-preview, .mobile-screen-preview');
-            for (const preview of previews) {
-                if (preview.style.display === 'block') {
-                    preview.style.display = 'none';
-                    e.preventDefault();
-                    return;
-                }
-            }
-        });
+        }, { passive: false });
     </script>
-    <script type="module" src="./js/mobile-init.js"></script>
     <script type="module" src="../js/script.js"></script>
 </body>
 </html>

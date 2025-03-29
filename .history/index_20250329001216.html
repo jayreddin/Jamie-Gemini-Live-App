@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App Version</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #f0f0f0;
+      }
+      #deviceTag {
+        font-size: 0.8em;
+        color: #666;
+      }
+      #mainContent {
+        padding: 10px;
+      }
+      #videoContainer {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+      }
+      #chatWindow {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+        padding: 5px;
+      }
+      #chatInput {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        background: #fff;
+        padding: 5px;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      }
+      #chatInput input {
+        flex: 1;
+        padding: 10px;
+      }
+      #chatInput button {
+        padding: 10px;
+      }
+      /* Settings Modal */
+      #settingsModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+      }
+      #settingsContent {
+        background: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 400px;
+      }
+      #settingsContent h2 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div id="logo">My Mobile App</div>
+      <div id="deviceTag">Device: Unknown</div>
+    </header>
+    <div id="mainContent">
+      <div id="videoContainer">
+        <video id="liveVideo" autoplay playsinline style="width:100%;"></video>
+      </div>
+      <div style="margin-top:10px; text-align:center;">
+        <button id="toggleCamera">Switch Camera</button>
+        <button id="toggleScreenShare">Screen Share</button>
+        <button id="openSettings">Settings</button>
+      </div>
+      <div id="chatWindow">
+        <!-- Chat messages will appear here -->
+      </div>
+    </div>
+    <div id="chatInput">
+      <input type="text" placeholder="Type a message..." id="chatMessage">
+      <button id="sendChat">Send</button>
+    </div>
+    <!-- Settings Modal -->
+    <div id="settingsModal">
+      <div id="settingsContent">
+        <h2>Settings</h2>
+        <label for="cameraSelect">Select Camera:</label>
+        <select id="cameraSelect"></select>
+        <br><br>
+        <!-- Additional settings options can be added here -->
+        <button id="closeSettings">Close</button>
+      </div>
+    </div>
+    <script>
+      // Device Detection
+      function detectDevice() {
+        const ua = navigator.userAgent;
+        let device = "Desktop";
+        if (/android/i.test(ua)) {
+          device = "Android";
+        } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+          device = "Apple";
+        }
+        document.getElementById('deviceTag').innerText = "Device: " + device;
+      }
+      detectDevice();
+
+      // Camera and Screen Share Variables
+      const videoElement = document.getElementById('liveVideo');
+      let currentStream = null;
+      let usingScreenShare = false;
+
+      // Start Camera Stream
+      async function startCamera(cameraId) {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
+        const constraints = {
+          video: cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "user" },
+          audio: true
+        };
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+          videoElement.srcObject = currentStream;
+          populateCameraList();
+        } catch (err) {
+          console.error("Error accessing media devices.", err);
+        }
+      }
+
+      // Populate Camera List for Selection
+      async function populateCameraList() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === "videoinput");
+        const cameraSelect = document.getElementById('cameraSelect');
+        cameraSelect.innerHTML = "";
+        videoDevices.forEach(device => {
+          const option = document.createElement("option");
+          option.value = device.deviceId;
+          option.text = device.label || "Camera " + (cameraSelect.length + 1);
+          cameraSelect.appendChild(option);
+        });
+      }
+
+      // Switch Camera Button Event
+      document.getElementById('toggleCamera').addEventListener('click', async () => {
+        const cameraSelect = document.getElementById('cameraSelect');
+        const selectedCamera = cameraSelect.value;
+        await startCamera(selectedCamera);
+      });
+
+      // Toggle Screen Share
+      document.getElementById('toggleScreenShare').addEventListener('click', async () => {
+        if (!usingScreenShare) {
+          try {
+            currentStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            videoElement.srcObject = currentStream;
+            usingScreenShare = true;
+          } catch (err) {
+            console.error("Error accessing display media.", err);
+          }
+        } else {
+          usingScreenShare = false;
+          await startCamera();
+        }
+      });
+
+      // Settings Modal Logic
+      const settingsModal = document.getElementById('settingsModal');
+      document.getElementById('openSettings').addEventListener('click', () => {
+        settingsModal.style.display = "block";
+      });
+      document.getElementById('closeSettings').addEventListener('click', () => {
+        settingsModal.style.display = "none";
+      });
+
+      // Initialize Camera on Page Load
+      startCamera();
+    </script>
+  </body>
+</html>

@@ -9,47 +9,15 @@
     <script>
         // Device detection and routing
         function detectDevice() {
-            // Get user agent and check for common tablet indicators
-            const userAgent = navigator.userAgent;
-            const isTablet = /iPad|tablet|Tab|Nexus(?!.*Mobile)|Pixel C/i.test(userAgent) ||
-                            (/Android/.test(userAgent) && !/Mobile/.test(userAgent));
-            const isPhone = /iPhone|iPod|Android.*Mobile|webOS|BlackBerry/i.test(userAgent);
-            
-            // Get screen dimensions for additional tablet detection
-            const screenWidth = window.innerWidth || document.documentElement.clientWidth || window.screen.width;
-            const screenHeight = window.innerHeight || document.documentElement.clientHeight || window.screen.height;
-            const minDimension = Math.min(screenWidth, screenHeight);
-            
-            // Consider large screens (>=600px) on mobile devices as tablets
-            const isLargeScreen = minDimension >= 600;
-            const isMobileDevice = isTablet || isPhone || (isLargeScreen && /Android|iPhone|iPad|iPod/i.test(userAgent));
-            
-            // Determine the target page
-            if (isMobileDevice) {
-                const isIOS = /iPad|iPhone|iPod/i.test(userAgent);
-                const targetPage = isIOS ? 'mobile/apple.html' : 'mobile/android.html';
-                
-                // Only redirect if we're on the main page and not already on a mobile page
-                const currentPath = window.location.pathname;
-                if (currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '') {
-                    window.location.replace(targetPage);
-                    return;
-                }
-            }
-
-            // Add device tag for desktop users
-            if (!isMobileDevice) {
-                const deviceTag = document.createElement('span');
-                deviceTag.className = 'device-tag';
-                deviceTag.textContent = 'Desktop';
-                document.body.appendChild(deviceTag);
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                window.location.replace(isIOS ? 'mobile/apple.html' : 'mobile/android.html');
+                return;
             }
         }
-
         // Run detection on page load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', detectDevice);
-        } else {
+        if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
             detectDevice();
         }
     </script>
