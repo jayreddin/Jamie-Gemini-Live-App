@@ -26,7 +26,6 @@ class SettingsManager {
             overlay: this.overlay,
             apiKeyInput: this.dialog.querySelector('#apiKey'),
             deepgramApiKeyInput: this.dialog.querySelector('#deepgramApiKey'),
-            geminiModelSelect: this.dialog.querySelector('#geminiModel'), // Added model select
             responseModeSelect: this.dialog.querySelector('#responseMode'),
             voiceSettingsGroup: this.dialog.querySelector('.voice-settings'),
             voiceSelect: this.dialog.querySelector('#voice'),
@@ -122,7 +121,6 @@ class SettingsManager {
         // Load values from localStorage
         this.elements.apiKeyInput.value = localStorage.getItem('apiKey') || '';
         this.elements.deepgramApiKeyInput.value = localStorage.getItem('deepgramApiKey') || '';
-        this.elements.geminiModelSelect.value = localStorage.getItem('geminiModel') || 'models/gemini-2.0-flash-exp'; // Load model
         this.elements.responseModeSelect.value = localStorage.getItem('responseMode') || 'text';
         this.elements.voiceSelect.value = localStorage.getItem('voiceName') || 'Aoede';
         this.elements.sampleRateInput.value = localStorage.getItem('sampleRate') || '27000';
@@ -149,7 +147,6 @@ class SettingsManager {
     saveSettings() {
         localStorage.setItem('apiKey', this.elements.apiKeyInput.value);
         localStorage.setItem('deepgramApiKey', this.elements.deepgramApiKeyInput.value);
-        localStorage.setItem('geminiModel', this.elements.geminiModelSelect.value); // Save model
         localStorage.setItem('responseMode', this.elements.responseModeSelect.value);
         localStorage.setItem('voiceName', this.elements.voiceSelect.value);
         localStorage.setItem('sampleRate', this.elements.sampleRateInput.value);

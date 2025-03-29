@@ -148,155 +148,8 @@ export class CameraManager {
         this.selectButton.title = 'Select Camera';
 
         this.availableCameras.forEach(camera => {
-            const option = document.createElement('option');
-            option.value = camera.deviceId;
-            option.textContent = camera.label || `Camera ${this.selectButton.options.length + 1}`;
-            if (this.stream && this.stream.getVideoTracks()[0].getSettings().deviceId === camera.deviceId) {
-                option.selected = true;
-            }
-            this.selectButton.appendChild(option);
-        });
-
-        this.selectButton.addEventListener('change', (event) => {
-            this.switchCamera(event.target.value);
-        });
-        this.controlsContainer.appendChild(this.selectButton);
-    }
-
-    /**
-     * Create and append the shrink/expand button to the controls container
-     * @private
-     */
-     _createShrinkButton() {
-        if (!this.controlsContainer) return;
-        if (this.shrinkButton) this.shrinkButton.remove();
-
-        this.shrinkButton = document.createElement('button');
-        this.shrinkButton.className = 'camera-control-btn camera-shrink-btn';
-        this.shrinkButton.innerHTML = this.isShrunk ? '➚' : '➘'; // Expand/Shrink icon
-        this.shrinkButton.title = this.isShrunk ? 'Expand Preview' : 'Shrink Preview';
-        this.shrinkButton.addEventListener('click', () => this._toggleShrink());
-        this.controlsContainer.appendChild(this.shrinkButton);
-    }
-
-    /**
-     * Toggle the shrunk state of the preview
-     * @private
-     */
-    _toggleShrink() {
-        this.isShrunk = !this.isShrunk;
-        if (this.previewContainer) {
-            this.previewContainer.classList.toggle('shrunk', this.isShrunk);
-        }
-        // Update button icon/title
-        if (this.shrinkButton) {
-            this.shrinkButton.innerHTML = this.isShrunk ? '➚' : '➘';
-            this.shrinkButton.title = this.isShrunk ? 'Expand Preview' : 'Shrink Preview';
-        }
-    }
-
-    /**
-     * Enumerate available camera devices
-     * @private
-     */
-    async _enumerateCameras() {
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-                console.warn("enumerateDevices() not supported.");
-                this.availableCameras = [];
-                return;
-            }
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            this.availableCameras = devices.filter(device => device.kind === 'videoinput');
-        } catch (err) {
-            console.error("Error enumerating devices:", err);
-            this.availableCameras = [];
-        }
-    }
-
-    /**
-     * Switch camera based on facing mode toggle or specific device ID
-     * @param {string} [deviceId] - Optional specific device ID to switch to
-     */
-    async switchCamera(deviceId) {
-        if (!this.isInitialized || this.availableCameras.length <= 1) return;
-
-        // Stop current stream
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-        }
-
-        let constraints = {
-            video: {
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-            }
-        };
-
-        if (deviceId) {
-            // Switch to specific device ID
-            constraints.video.deviceId = { exact: deviceId };
-            // Update facingMode based on the selected device if possible (heuristic)
-            const selectedCamera = this.availableCameras.find(cam => cam.deviceId === deviceId);
-            if (selectedCamera && selectedCamera.label) {
-                 if (/front/i.test(selectedCamera.label)) this.config.facingMode = 'user';
-                 else if (/back/i.test(selectedCamera.label)) this.config.facingMode = 'environment';
-                 // else keep current facingMode
-            }
-        } else if (this.isMobile) {
-            // Toggle facingMode if no deviceId is provided (mobile only)
-            this.config.facingMode = this.config.facingMode === 'user' ? 'environment' : 'user';
-            constraints.video.facingMode = this.config.facingMode;
-        } else {
-             // Desktop: Cycle through available devices if no specific ID
-             const currentDeviceId = this.videoElement.srcObject?.getVideoTracks()[0]?.getSettings().deviceId;
-             const currentIndex = this.availableCameras.findIndex(cam => cam.deviceId === currentDeviceId);
-             const nextIndex = (currentIndex + 1) % this.availableCameras.length;
-             constraints.video.deviceId = { exact: this.availableCameras[nextIndex].deviceId };
-        }
-
-        localStorage.setItem('facingMode', this.config.facingMode || 'user'); // Save preference
-
-        try {
-            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-            this.videoElement.srcObject = this.stream;
-            await this.videoElement.play();
-
-            // Update the select dropdown if it exists
-            if (this.selectButton) {
-                const currentDeviceId = this.stream.getVideoTracks()[0].getSettings().deviceId;
-                this.selectButton.value = currentDeviceId;
-            }
-
-        } catch (error) {
-            console.error('Failed to switch camera:', error);
-            // Attempt to revert to previous settings or a default
-            this.config.facingMode = localStorage.getItem('facingMode') || 'user';
-            // Maybe try initializing again with default constraints?
-        }
-    }
-
-    /**
-     * Initialize camera stream and canvas
-     * @returns {Promise<void>}
-     */
-    async initialize() {
-        if (this.isInitialized) return;
-
-        try {
-            const constraints = {
-                video: {
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
-                }
-            };
-
-            // Set initial facingMode on mobile from localStorage or default
-            if (this.isMobile) {
-                this.config.facingMode = localStorage.getItem('facingMode') || 'user';
+                this.config.facingMode = this.config.facingMode || 'user';
                 constraints.video.facingMode = this.config.facingMode;
-            } else {
-                // For desktop, maybe select a preferred device ID if stored?
             }
 
             this.stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -375,22 +228,16 @@ export class CameraManager {
             this.videoElement = null;
         }
 
-        // Remove controls
-        if (this.controlsContainer) {
-            this.controlsContainer.innerHTML = ''; // Clear controls
+        if (this.switchButton) {
+            this.switchButton.remove();
+            this.switchButton = null;
         }
-        if (this.switchButton) this.switchButton = null;
-        if (this.selectButton) this.selectButton = null;
-        if (this.shrinkButton) this.shrinkButton = null;
 
-        // Remove preview container from DOM and hide it
         if (this.previewContainer) {
-            this.hidePreview(); // Hides parent container too
-            this.previewContainer.remove(); // Remove from DOM
+            this.hidePreview();
+            this.previewContainer.remove();
             this.previewContainer = null;
         }
-        this.videoWrapper = null;
-        this.controlsContainer = null;
 
         this.canvas = null;
         this.ctx = null;

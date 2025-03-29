@@ -10,20 +10,6 @@ export const settingsTemplate = `
 </div>
 
 <div class="settings-group">
-    <label for="geminiModel">Gemini Model</label>
-    <select id="geminiModel">
-        <option value="models/gemini-2.0-flash-exp">gemini-2.0-flash-exp (Default)</option>
-        <option value="models/gemini-2.5-pro-exp-03-25">gemini-2.5-pro-exp-03-25</option>
-        <option value="models/gemini-2.0-flash">gemini-2.0-flash</option>
-        <option value="models/gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
-        <option value="models/gemini-2.0-flash-exp-image-generation">gemini-2.0-flash-exp-image-generation</option>
-        <option value="models/gemini-2.0-flash-thinking-exp-01-21">gemini-2.0-flash-thinking-exp-01-21</option>
-        <option value="models/gemini-1.5-pro-002">gemini-1.5-pro-002</option>
-        <option value="models/gemini-1.5-flash-002">gemini-1.5-flash-002</option>
-    </select>
-</div>
-
-<div class="settings-group">
     <label for="responseMode">Response Mode</label>
     <select id="responseMode">
         <option value="text">Text Only</option>

@@ -311,27 +311,29 @@
         width: 55%;
     }
 
-    /* Corrected Landscape styles */
     .mobile-controls {
-        top: calc(60px + var(--safe-area-inset-top)); /* Keep banner position */
+    bottom: 50%;
+    /* Landscape adjustments might need review depending on desired layout */
+    /* Keep controls centered horizontally in landscape for now */
+    .mobile-controls {
+        top: calc(60px + var(--safe-area-inset-top));
         left: 15px;
         right: 15px;
-        width: auto; /* Allow width to adjust */
-        bottom: auto; /* Reset bottom positioning */
+        width: auto; /* Reset width */
+        bottom: auto; /* Reset bottom */
         transform: none; /* Reset transform */
-        justify-content: center; /* Center icons */
-        flex-direction: row; /* Ensure horizontal */
+        justify-content: center;
     }
 
      /* Adjust chat container top in landscape */
     .mobile-chat-container {
-       top: calc(120px + var(--safe-area-inset-top)); /* Keep adjusted top */
+       top: calc(120px + var(--safe-area-inset-top));
     }
 
     .mobile-control-btn {
         margin: 0 10px; /* Adjust horizontal margin in landscape */
     }
-} /* End of landscape media query */
+}
 
 /* Notched Device Support */
 @supports (padding: max(0px)) {

@@ -36,7 +36,7 @@ export const getConfig = () => {
     
     // Base configuration
     const config = {
-        model: localStorage.getItem('geminiModel') || 'models/gemini-2.0-flash-exp', // Read model from localStorage
+        model: 'models/gemini-2.0-flash-exp',
         generationConfig: {
             temperature: parseFloat(localStorage.getItem('temperature')) || 1.8,
             top_p: parseFloat(localStorage.getItem('top_p')) || 0.95,

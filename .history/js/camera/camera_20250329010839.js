@@ -392,9 +392,3 @@ export class CameraManager {
         this.videoWrapper = null;
         this.controlsContainer = null;
 
-        this.canvas = null;
-        this.ctx = null;
-        this.isInitialized = false;
-        this.aspectRatio = null;
-    }
-}

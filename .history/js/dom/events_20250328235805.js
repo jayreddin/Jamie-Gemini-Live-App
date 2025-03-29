@@ -72,52 +72,66 @@ export function setupEventListeners(agent) {
         }
     });
 
-    // Camera toggle handler
+    // Camera toggle handler with preview mode support
+    let isCameraInChat = true;
     elements.cameraBtn.addEventListener('click', async () => {
-        const isActive = elements.cameraBtn.classList.contains('active');
         try {
             await ensureAgentReady(agent);
-            if (!isActive) {
-                // Start camera and show preview
-                await agent.startCameraCapture(true); // Always show preview now
+            
+            if (!isCameraActive) {
+                await agent.startCameraCapture(isCameraInChat);
                 elements.cameraBtn.classList.add('active');
-                // CameraManager's showPreview will handle showing the container
             } else {
-                // Stop camera and hide preview
                 await agent.stopCameraCapture();
                 elements.cameraBtn.classList.remove('active');
-                // CameraManager's dispose should hide the container
             }
+            isCameraActive = !isCameraActive;
         } catch (error) {
             console.error('Error toggling camera:', error);
             elements.cameraBtn.classList.remove('active');
-            if (agent.cameraManager) agent.cameraManager.hidePreview(); // Ensure preview is hidden on error
+            isCameraActive = false;
         }
     });
 
-    // Screen sharing handler
+    // Double click to toggle camera preview mode
+    elements.cameraBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        isCameraInChat = !isCameraInChat;
+        
+        if (isCameraActive) {
+            agent.stopCameraCapture();
+            agent.startCameraCapture(isCameraInChat);
+        }
+        
+        elements.cameraBtn.setAttribute('title', isCameraInChat ? 'Camera (Inline Mode)' : 'Camera (Float Mode)');
+        elements.cameraBtn.style.opacity = isCameraInChat ? '1' : '0.7';
+    });
+
+    // Screen sharing handler with mobile support
+    let isScreenShareActive = false;
+    
     agent.on('screenshare_stopped', () => {
         elements.screenBtn.classList.remove('active');
-        if (agent.screenManager) agent.screenManager.hidePreview(); // Hide preview on stop
+        isScreenShareActive = false;
         console.info('Screen share stopped');
     });
 
     elements.screenBtn.addEventListener('click', async () => {
-        const isActive = elements.screenBtn.classList.contains('active');
         try {
             await ensureAgentReady(agent);
-            if (!isActive) {
+            
+            if (!isScreenShareActive) {
                 await agent.startScreenShare();
                 elements.screenBtn.classList.add('active');
-                if (agent.screenManager) agent.screenManager.showPreview(); // Show preview on start
             } else {
-                await agent.stopScreenShare(); // This will trigger the 'screenshare_stopped' event
-                elements.screenBtn.classList.remove('active'); // Ensure removal if stop fails silently
+                await agent.stopScreenShare();
+                elements.screenBtn.classList.remove('active');
             }
+            isScreenShareActive = !isScreenShareActive;
         } catch (error) {
             console.error('Error toggling screen share:', error);
             elements.screenBtn.classList.remove('active');
-            if (agent.screenManager) agent.screenManager.hidePreview(); // Ensure preview is hidden on error
+            isScreenShareActive = false;
         }
     });
 

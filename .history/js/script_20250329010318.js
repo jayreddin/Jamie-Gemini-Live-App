@@ -8,11 +8,6 @@ import { ChatManager } from './chat/chat-manager.js';
 import { setupEventListeners } from './dom/events.js';
 import elements from './dom/elements.js';
 
-// --- Context Detection ---
-const isMobileContext = document.body.classList.contains('mobile-container');
-console.log(`Running in ${isMobileContext ? 'Mobile' : 'Desktop'} context.`);
-// --- End Context Detection ---
-
 const url = getWebsocketUrl();
 const config = getConfig();
 const deepgramApiKey = getDeepgramApiKey();

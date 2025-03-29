@@ -123,7 +123,6 @@
 
 /* Mobile-optimized Screen Preview */
 .mobile-screen-preview {
-    position: relative; /* Needed for absolute positioning of close button */
     position: absolute;
     width: 100%;
     height: auto;
@@ -132,27 +131,6 @@
     border-radius: 12px;
     overflow: hidden;
     z-index: 2;
-}
-
-.screen-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-    line-height: 30px; /* Center the 'X' */
-    text-align: center;
-    cursor: pointer;
-    z-index: 10; /* Ensure it's above video/content */
-    transition: background-color 0.2s;
-}
-.screen-close-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
 }
 
 /* Chat Interface */
@@ -199,34 +177,19 @@
     font-size: 16px;
 }
 
-/* Mobile Control Buttons - Banner Style */
+/* Mobile Control Buttons */
 .mobile-controls {
-    position: absolute; /* Changed from fixed */
-    top: calc(60px + var(--safe-area-inset-top)); /* Position below header elements */
+    position: fixed;
+    bottom: calc(70px + var(--safe-area-inset-bottom)); /* Position above input container */
     left: 15px;
     right: 15px;
     display: flex;
-    flex-direction: row; /* Ensure horizontal layout */
-    justify-content: center; /* Center icons in the banner */
+    justify-content: space-around; /* Distribute icons evenly */
     align-items: center;
-    padding: 8px 10px; /* Padding for the banner */
-    gap: 20px; /* Increased space between icons */
-    z-index: 500; /* Below header buttons but above chat */
-    height: auto; /* Let height be determined by content */
-    background-color: rgba(45, 45, 45, 0.8); /* Banner background */
-    border-radius: 8px; /* Rounded corners for banner */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
-}
-
-/* Adjust chat container top position */
-.mobile-chat-container {
-    position: absolute;
-    top: calc(120px + var(--safe-area-inset-top)); /* Move down to accommodate banner */
-    left: 15px;
-    right: 15px;
-    bottom: calc(70px + var(--safe-area-inset-bottom));
-    display: flex;
-    flex-direction: column;
+    padding: 0 10px; /* Add some horizontal padding */
+    gap: 15px; /* Space between icons */
+    z-index: 1000;
+    height: 60px; /* Give the container some height */
 }
 
 .mobile-control-btn {
@@ -311,27 +274,20 @@
         width: 55%;
     }
 
-    /* Corrected Landscape styles */
     .mobile-controls {
-        top: calc(60px + var(--safe-area-inset-top)); /* Keep banner position */
-        left: 15px;
-        right: 15px;
-        width: auto; /* Allow width to adjust */
-        bottom: auto; /* Reset bottom positioning */
-        transform: none; /* Reset transform */
-        justify-content: center; /* Center icons */
-        flex-direction: row; /* Ensure horizontal */
-    }
-
-     /* Adjust chat container top in landscape */
-    .mobile-chat-container {
-       top: calc(120px + var(--safe-area-inset-top)); /* Keep adjusted top */
+    bottom: 50%;
+    transform: translateY(50%);
+    flex-direction: row; /* Align horizontally in landscape */
+    justify-content: center;
+    width: auto; /* Allow width to adjust */
+    left: auto; /* Reset left positioning */
+    right: 10px; /* Position on the right */
     }
 
     .mobile-control-btn {
-        margin: 0 10px; /* Adjust horizontal margin in landscape */
+        margin: 0 5px; /* Add horizontal margin in landscape */
     }
-} /* End of landscape media query */
+}
 
 /* Notched Device Support */
 @supports (padding: max(0px)) {

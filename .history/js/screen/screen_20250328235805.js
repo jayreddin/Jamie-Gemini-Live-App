@@ -22,7 +22,6 @@ export class ScreenManager {
         this.isInitialized = false;
         this.aspectRatio = null;
         this.previewContainer = null;
-        this.closeButton = null; // Added close button reference
         
         // Device detection
         this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -30,71 +29,20 @@ export class ScreenManager {
     }
 
     /**
-     * Show the screen preview and add close button
+     * Show the screen preview
      */
     showPreview() {
-        if (!this.previewContainer) {
-            // Try to find the preview container in the DOM
-            const containerId = this.isIOS || this.isAndroid ? 'screenPreview' : 'screenPreview'; // Use mobile ID if needed
-            this.previewContainer = document.getElementById(containerId);
-            if (!this.previewContainer) {
-                console.error(`Screen preview container #${containerId} not found.`);
-                return;
-            }
+        if (this.previewContainer) {
+            this.previewContainer.style.display = 'block';
         }
-
-        // Ensure the container is visible
-        this.previewContainer.style.display = 'block';
-        this.previewContainer.parentElement.style.display = 'block'; // Ensure parent is visible too
-
-        // Add close button if not already present
-        this._createCloseButton();
     }
 
     /**
-     * Hide the screen preview and remove close button
+     * Hide the screen preview
      */
     hidePreview() {
         if (this.previewContainer) {
             this.previewContainer.style.display = 'none';
-            // Also hide the parent container if it exists
-            const parentContainer = document.getElementById(this.isIOS || this.isAndroid ? 'screenPreview' : 'screenPreview');
-             if (parentContainer) {
-                parentContainer.style.display = 'none';
-            }
-        }
-        this._removeCloseButton();
-    }
-
-    /**
-     * Create and append the close button to the preview container
-     * @private
-     */
-    _createCloseButton() {
-        if (!this.previewContainer || this.closeButton) return;
-
-        this.closeButton = document.createElement('button');
-        this.closeButton.className = 'screen-close-btn'; // Add specific class for styling
-        this.closeButton.innerHTML = '✕'; // Close icon
-        this.closeButton.title = 'Stop Sharing';
-        this.closeButton.addEventListener('click', () => {
-            // Trigger the stop action - assuming the agent handles the actual stopping
-            const screenBtn = document.getElementById('screenBtnControl');
-            if (screenBtn) {
-                screenBtn.click(); // Simulate clicking the main button to stop
-            }
-        });
-        this.previewContainer.appendChild(this.closeButton);
-    }
-
-     /**
-     * Remove the close button
-     * @private
-     */
-    _removeCloseButton() {
-        if (this.closeButton) {
-            this.closeButton.remove();
-            this.closeButton = null;
         }
     }
 
@@ -331,12 +279,10 @@ export class ScreenManager {
             this.videoElement = null;
         }
 
-        // Hide preview and remove close button
-        this.hidePreview();
-
         if (this.previewContainer) {
-            this.previewContainer.innerHTML = ''; // Clear content
-            // Don't nullify previewContainer here, might be needed if restarted
+            this.hidePreview();
+            this.previewContainer.innerHTML = '';
+            this.previewContainer = null;
         }
 
         this.canvas = null;
