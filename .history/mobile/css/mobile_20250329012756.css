@@ -199,7 +199,8 @@
     font-size: 16px;
 }
 
-/* Mobile Control Banner - Above Input Box */
+/* Mobile Control Buttons - Above Input Box */
+/* Use ID and class for higher specificity */
 #controlButtons.mobile-controls {
     position: fixed; /* Fixed position */
     bottom: calc(70px + var(--safe-area-inset-bottom)); /* Position above input container */
@@ -209,13 +210,14 @@
     flex-direction: row; /* Horizontal layout */
     justify-content: space-around; /* Space out icons */
     align-items: center;
-    padding: 8px; /* Reduced padding */
+    padding: 5px 10px; /* Minimal padding */
     gap: 15px; /* Space between icons */
     z-index: 1000; /* Ensure above chat */
     height: 60px; /* Consistent height */
-    background-color: rgba(45, 45, 45, 0.8); /* Add banner background */
-    border-radius: 12px; /* Rounded corners */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
+    /* Remove banner styles */
+    /* background-color: rgba(45, 45, 45, 0.8); */ /* Keep banner styles commented out */
+    /* border-radius: 8px; */
+    /* box-shadow: 0 2px 5px rgba(0,0,0,0.3); */
 }
 
 /* Reset chat container position */
@@ -224,7 +226,7 @@
     top: calc(60px + var(--safe-area-inset-top)); /* Back to original top */
     left: 15px;
     right: 15px;
-    bottom: calc(140px + var(--safe-area-inset-bottom)); /* Adjust bottom to make space for controls */
+    bottom: calc(130px + var(--safe-area-inset-bottom)); /* Adjust bottom to make space for controls */
     display: flex;
     flex-direction: column;
 }
@@ -315,7 +317,7 @@
         width: 55%;
     }
 
-    /* Landscape: Keep controls as banner above input */
+    /* Landscape: Keep controls above input */
     #controlButtons.mobile-controls { /* Use ID and class */
         bottom: calc(70px + var(--safe-area-inset-bottom));
         left: 15px;
@@ -330,7 +332,7 @@
      /* Adjust chat container bottom in landscape */
     .mobile-chat-container {
        top: calc(60px + var(--safe-area-inset-top)); /* Reset top */
-       bottom: calc(140px + var(--safe-area-inset-bottom)); /* Adjust bottom */
+       bottom: calc(130px + var(--safe-area-inset-bottom)); /* Adjust bottom */
     }
 
     #controlButtons.mobile-controls .mobile-control-btn { /* Use ID and class */
